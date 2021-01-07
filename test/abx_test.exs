@@ -1,4 +1,4 @@
-defmodule AbxTest do
+defmodule ABXTest do
   use ExUnit.Case
-  doctest Abx
+  doctest ABX
 end
