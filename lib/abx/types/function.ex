@@ -53,8 +53,33 @@ defmodule ABX.Types.Function do
       :pure ->
         define_immutable_call(abi, signature, abi_name, params, return_types)
 
+      :nonpayable ->
+        define_transaction_call(abi, signature, abi_name, params)
+
+      :payable ->
+        define_transaction_call(abi, signature, abi_name, params)
+
       _ ->
         nil
+    end
+  end
+
+  def define_transaction_call(abi, signature, abi_name, params) do
+    selector =
+      signature
+      |> Ether.keccak_256(:hex)
+      |> binary_part(0, 10)
+
+    quote generated: true do
+      @doc unquote(signature)
+      def unquote(abi_name)(unquote_splicing(params), opts) do
+        unquote(__MODULE__).tco(
+          unquote(params),
+          unquote(Macro.escape(abi)),
+          unquote(selector),
+          Keyword.merge([to: @contract_address], opts)
+        )
+      end
     end
   end
 
@@ -98,7 +123,7 @@ defmodule ABX.Types.Function do
       |> normalize_address()
 
     Map.new(opts)
-    |> Map.take([:from, :gas, :gasPrice, :value])
+    |> Map.take([:from, :gas, :gas_price, :gas_limit, :value, :nonce])
     |> Map.merge(%{to: to, data: data})
   end
 

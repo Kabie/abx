@@ -1,3 +1,5 @@
 defmodule ABX.Web3Adapter do
-  @callback request({{atom(), [term()]}, [ABX.types()]}) :: {:ok, term()} | {:error, term()}
+  @type return_type() :: ABX.types() | :raw | :hex
+
+  @callback request({{atom(), [term()]}, [return_type()]}) :: {:ok, term()} | {:error, term()}
 end
