@@ -44,14 +44,24 @@ defmodule ABX do
   end
 
   def parse_type(name) do
-    Logger.warn("Unsupported type: #{name}")
-    String.to_atom(name)
+    case String.split_at(name, -2) do
+      {inner_type, "[]"} ->
+        {:array, parse_type(inner_type)}
+
+      _ ->
+        Logger.warn("Unsupported type: #{name}")
+        String.to_atom(name)
+    end
   end
 
   for {name, type} <- all_types do
     def type_name(unquote(type)) do
       unquote(name)
     end
+  end
+
+  def type_name({:array, inner_type}) do
+    type_name(inner_type) <> "[]"
   end
 
   def type_name(type) do
