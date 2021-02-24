@@ -12,11 +12,18 @@ defmodule ABX.Web3API do
         |> Map.update!(:transactionIndex, &hex_number/1)
       end
 
+      def_web3 :eth_getTransactionReceipt, [tx], fn txn ->
+        txn
+        |> Map.update!(:status, &hex_number/1)
+      end
+
       def_web3 :eth_blockNumber, [], :hex
 
       def_web3 :eth_gasPrice, [], :hex
 
       def_web3 :eth_getTransactionCount, [address, block], :hex
+
+      def_web3 :eth_sendRawTransaction, [signed_txn], :raw
     end
   end
 
