@@ -24,6 +24,10 @@ defmodule ABX.Web3API do
       def_web3 :eth_getTransactionCount, [address, block], :hex
 
       def_web3 :eth_sendRawTransaction, [signed_txn], :raw
+
+      def_web3 :eth_getLogs, [filter_object], fn logs ->
+        [logs]
+      end
     end
   end
 
@@ -36,7 +40,6 @@ defmodule ABX.Web3API do
     end
 
   end
-
 
   def hex_number(nil) do
     nil

@@ -37,7 +37,7 @@ defmodule Ether do
     to_hex(address)
   end
 
-  def to_hex(bytes) do
+  def to_hex(bytes) when is_binary(bytes) do
     "0x" <> Base.encode16(bytes, case: :lower)
   end
 
