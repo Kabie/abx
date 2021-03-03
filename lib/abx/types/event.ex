@@ -44,8 +44,6 @@ defmodule ABX.Types.Event do
       data_inputs
       |> Enum.map(&elem(&1, 1))
 
-    data = Ether.unhex(data)
-
     indexed_fields =
       topics
       |> Enum.map(&Ether.unhex/1)
