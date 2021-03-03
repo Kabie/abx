@@ -28,6 +28,10 @@ defmodule ABX.Decoder do
     {:ok, uint}
   end
 
+  def decode_type(<<bool::256>>, :bool, _data) do
+    {:ok, bool > 0}
+  end
+
   for i <- 1..32 do
     def decode_type(<<bytes::bytes-size(unquote(i)), _padding::bytes-size(unquote(32 - i))>>, {:bytes, unquote(i)}, _data) do
       {:ok, bytes}
@@ -44,6 +48,14 @@ defmodule ABX.Decoder do
     {:ok, string}
   end
 
+  def decode_type(<<offset::256>>, {:array, inner_type}, data) do
+    <<_skipped::bytes-size(offset), len::256, rest::bytes()>> = data
+    inner_size = len * 32
+    <<inner_data::bytes-size(inner_size), _::bytes()>> = rest
+    decode_data(inner_data, List.duplicate(inner_type, len))
+  end
+
+  # TODO
   def decode_type(_, type, _data) do
     throw({:unknow_type, type})
   end

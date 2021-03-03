@@ -39,8 +39,16 @@ defmodule ABX.Types.Function do
 
     params =
       abi.inputs
-      |> Enum.map(&elem(&1, 0))
-      |> Enum.map(&Macro.var(&1, nil))
+      |> Enum.with_index(1)
+      |> Enum.map(fn {input, i} ->
+        var_name =
+          case elem(input, 0) do
+            :"" -> :"arg#{i}"
+            name -> name
+          end
+
+        Macro.var(var_name, nil)
+      end)
 
     return_types =
       abi.outputs
