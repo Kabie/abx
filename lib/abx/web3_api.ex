@@ -17,6 +17,12 @@ defmodule ABX.Web3API do
         |> Map.update!(:status, &hex_number/1)
       end
 
+      def_web3 :eth_getBlockByHash, [hash, full], fn block ->
+        block
+        |> Map.update!(:number, &hex_number/1)
+        |> Map.update!(:timestamp, &hex_number/1)
+      end
+
       def_web3 :eth_blockNumber, [], :hex
 
       def_web3 :eth_gasPrice, [], :hex

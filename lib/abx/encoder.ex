@@ -1,18 +1,11 @@
 defmodule ABX.Encoder do
+  require Logger
 
   @spec encode(term(), ABX.types()) :: binary()
 
-  def encode(integer_address, :address) when is_integer(integer_address) do
-    <<0::96, integer_address::160>>
-  end
-
-  def encode(<<integer_address::160>>, :address) do
-    <<0::96, integer_address::160>>
-  end
-
-  def encode("0x" <> <<bytes_address::bytes-size(40)>>, :address) do
-    {:ok, address} = Base.decode16(bytes_address, case: :mixed)
-    <<0::96, address::bytes()>>
+  def encode(address, :address) do
+    {:ok, %{bytes: bytes}} = ABX.Types.Address.cast(address)
+    <<0::96, bytes::bytes()>>
   end
 
   def encode(integer, {:uint, bits}) when is_integer(integer) do
@@ -21,7 +14,8 @@ defmodule ABX.Encoder do
   end
 
   # TODO:
-  def encode(_value, _type) do
+  def encode(value, type) do
+    Logger.error("Bad type: #{inspect(type)} #{inspect(value)}")
     <<0::256>>
   end
 end
