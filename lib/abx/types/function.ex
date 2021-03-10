@@ -136,9 +136,12 @@ defmodule ABX.Types.Function do
   end
 
   def encode_inputs(inputs, input_types) do
-    for {value, type} <- Enum.zip(inputs, input_types), into: <<>> do
-      ABX.Encoder.encode(value, type)
-    end
+    encoded_inputs =
+      for {value, type} <- Enum.zip(inputs, input_types) do
+        ABX.Encoder.encode(value, type)
+      end
+
+    ABX.Encoder.pack(encoded_inputs, input_types)
   end
 
   def cast_inputs(inputs, types) do
