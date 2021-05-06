@@ -44,9 +44,12 @@ defmodule ABX do
   end
 
   def parse_type(name) do
-    case String.split_at(name, -2) do
-      {inner_type, "[]"} ->
+    case Regex.run(~r/(.*)\[(\d*)\]/, name) do
+      [_, inner_type, ""] ->
         {:array, parse_type(inner_type)}
+
+      [_, inner_type, n] ->
+        {:array, parse_type(inner_type), String.to_integer(n)}
 
       _ ->
         Logger.warn("Unsupported type: #{name}")
@@ -62,6 +65,10 @@ defmodule ABX do
 
   def type_name({:array, inner_type}) do
     type_name(inner_type) <> "[]"
+  end
+
+  def type_name({:array, inner_type, n}) do
+    "#{type_name(inner_type)}[#{n}]"
   end
 
   def type_name(type) do

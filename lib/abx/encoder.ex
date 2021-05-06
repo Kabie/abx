@@ -22,6 +22,12 @@ defmodule ABX.Encoder do
     encode(length(list), {:uint, 256}) <> data
   end
 
+  def encode(list, {:array, inner_type, n}) when is_list(list) and length(list) == n do
+    for value <- list, into: <<>> do
+      encode(value, inner_type)
+    end
+  end
+
   # TODO: more types
   def encode(value, type) do
     Logger.error("Unsupported type #{inspect(type)}: #{inspect(value)}")
