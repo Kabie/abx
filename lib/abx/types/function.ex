@@ -97,8 +97,17 @@ defmodule ABX.Types.Function do
       |> Ether.keccak_256(:hex)
       |> binary_part(0, 10)
 
+    return_type_string =
+      return_types
+      |> Enum.map(&ABX.type_name/1)
+      |> Enum.join(",")
+
+    doc = """
+    #{signature} returns (#{return_type_string})
+    """
+
     quote generated: true do
-      @doc unquote(signature)
+      @doc unquote(doc)
       def unquote(abi_name)(unquote_splicing(params), opts) do
         block =
           Keyword.get(opts, :block, :latest)
