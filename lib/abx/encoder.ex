@@ -13,6 +13,11 @@ defmodule ABX.Encoder do
     <<0::size(padding), integer::size(bits)>>
   end
 
+  def encode(integer, {:int, bits}) when is_integer(integer) do
+    padding = 256 - bits
+    << -1::size(padding), integer::signed-size(bits)>>
+  end
+
   def encode(list, {:array, inner_type}) when is_list(list) do
     data =
       for value <- list, into: <<>> do
@@ -20,6 +25,12 @@ defmodule ABX.Encoder do
       end
 
     encode(length(list), {:uint, 256}) <> data
+  end
+
+  def encode(list, {:array, inner_type, n}) when is_list(list) and length(list) == n do
+    for value <- list, into: <<>> do
+      encode(value, inner_type)
+    end
   end
 
   # TODO: more types

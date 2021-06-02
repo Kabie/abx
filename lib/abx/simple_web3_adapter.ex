@@ -39,6 +39,10 @@ defmodule ABX.SimpleWeb3Adapter do
 
             {:ok, results}
 
+          {:error, error} ->
+            Logger.error("JSONRPC error #{inspect(jsonrpc_payload)}: #{inspect(error)}")
+            {:error, error}
+
           error ->
             Logger.error("JSONRPC error #{inspect(jsonrpc_payload)}: #{inspect(error)}")
             {:error, :unknown_error}

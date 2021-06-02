@@ -38,6 +38,16 @@ defmodule ABX.Decoder do
     end
   end
 
+  for i <- 1..31 do
+    def decode_type(<<_::signed-unquote(256 - i * 8), n::signed-unquote(i * 8)>>, {:int, unquote(i * 8)}, _data) do
+      {:ok, n}
+    end
+  end
+
+  def decode_type(<<n::signed-256>>, {:int, 256}, _data) do
+    {:ok, n}
+  end
+
   def decode_type(<<offset::256>>, :bytes, data) do
     <<_skipped::bytes-size(offset), len::256, bytes::bytes-size(len), _::bytes()>> = data
     {:ok, bytes}

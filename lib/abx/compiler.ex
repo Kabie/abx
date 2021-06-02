@@ -64,7 +64,7 @@ defmodule ABX.Compiler do
     %ABX.Types.Constructor{
       inputs: parse_params(abi.inputs),
       payable: abi[:payable],
-      state_mutability: parse_state_mutability(abi.stateMutability)
+      state_mutability: parse_state_mutability(abi[:stateMutability])
     }
   end
 
@@ -84,7 +84,7 @@ defmodule ABX.Compiler do
       outputs: parse_params(abi.outputs),
       constant: abi[:constant],
       payable: abi[:payable],
-      state_mutability: parse_state_mutability(abi.stateMutability)
+      state_mutability: parse_state_mutability(abi[:stateMutability])
     }
   end
 
@@ -125,6 +125,7 @@ defmodule ABX.Compiler do
   def parse_state_mutability("pure"), do: :pure
   def parse_state_mutability("payable"), do: :payable
   def parse_state_mutability("nonpayable"), do: :nonpayable
+  def parse_state_mutability(_), do: :view
 
   # definitions
   def define_event(%ABX.Types.Event{} = event) do
