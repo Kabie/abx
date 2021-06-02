@@ -23,6 +23,12 @@ defmodule ABX.Web3API do
         |> Map.update!(:timestamp, &hex_number/1)
       end
 
+      def_web3 :eth_getBlockByNumber, [block, full], fn block ->
+        block
+        |> Map.update!(:number, &hex_number/1)
+        |> Map.update!(:timestamp, &hex_number/1)
+      end
+
       def_web3 :eth_blockNumber, [], :hex
 
       def_web3 :eth_gasPrice, [], :hex
@@ -34,12 +40,18 @@ defmodule ABX.Web3API do
       def_web3 :eth_getLogs, [filter_object], fn logs ->
         [logs]
       end
+
+      def_web3 :eth_getBalance, [address, block], :hex
     end
   end
 
   defmacro def_web3(method, params, return_type) do
 
     quote do
+      def unquote(method)(unquote_splicing(params)) do
+        {{unquote(method), unquote(params)}, unquote(return_type)}
+      end
+
       def unquote(method)(web3_endpoint, unquote_splicing(params)) do
         request(web3_endpoint, {{unquote(method), unquote(params)}, unquote(return_type)})
       end
