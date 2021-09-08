@@ -2,6 +2,7 @@ defmodule ABX.Encoder do
   require Logger
 
   @spec encode(term(), ABX.types()) :: binary()
+  def encode(value, type)
 
   def encode(address, :address) do
     {:ok, %{bytes: bytes}} = ABX.Types.Address.cast(address)
@@ -15,7 +16,11 @@ defmodule ABX.Encoder do
 
   def encode(integer, {:int, bits}) when is_integer(integer) do
     padding = 256 - bits
-    << -1::size(padding), integer::signed-size(bits)>>
+    if integer >= 0 do
+      << 0::size(padding), integer::signed-size(bits)>>
+    else
+      << -1::size(padding), integer::signed-size(bits)>>
+    end
   end
 
   def encode(list, {:array, inner_type}) when is_list(list) do
