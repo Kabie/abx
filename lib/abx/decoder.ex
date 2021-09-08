@@ -21,7 +21,7 @@ defmodule ABX.Decoder do
 
   @spec decode_type(<<_::256>>, term(), binary()) :: {:ok, term()} | :error
   def decode_type(<<_padding::bytes-size(12), address::bytes-size(20)>>, :address, _data) do
-    {:ok, address}
+    ABX.Types.Address.cast(address)
   end
 
   def decode_type(<<uint::256>>, {:uint, _size}, _data) do
