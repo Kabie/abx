@@ -42,6 +42,13 @@ defmodule ABX.Web3API do
       end
 
       def_web3 :eth_getBalance, [address, block], :hex
+
+      def_web3 :eth_feeHistory, [block_count, newest_block, reward_percentile], fn result ->
+        result
+        |> Map.update!(:oldestBlock, &hex_number/1)
+        |> Map.update!(:baseFeePerGas, fn list -> Enum.map(list, &hex_number/1) end)
+        |> Map.update(:reward, [], fn list -> Enum.map(list, &hex_number/1) end)
+      end
     end
   end
 

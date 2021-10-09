@@ -30,6 +30,19 @@ defmodule Ether do
     |> to_hex()
   end
 
+  def parse_privkey(private_key) do
+    case private_key do
+      <<_::binary-size(32)>> ->
+        {:ok, private_key}
+
+      <<encoded_private_key::binary-size(64)>> ->
+        Base.decode16(encoded_private_key, case: :mixed)
+
+      _ ->
+        :error
+    end
+  end
+
   def address_of(priv_key) do
     <<4, public::bytes()>> = pubkey_create(priv_key)
 
