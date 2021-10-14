@@ -2,9 +2,14 @@ defmodule Ether do
   @spec keccak_256(bytes :: binary()) :: <<_::_*32>>
   defdelegate keccak_256(bytes), to: :keccakf1600, as: :sha3_256
 
-  @spec pubkey_create(bytes :: <<_::_*32>>) :: <<_::_*20>>
-  def pubkey_create(bytes) do
-    {:ok, pubkey} = :libsecp256k1.ec_pubkey_create(bytes, :uncompressed)
+  @type privkey() :: <<_::_*32>> | <<_::_*64>> | pos_integer()
+  @type pubkey() :: <<_::_*65>>
+  @type address() :: <<_::_*20>> | <<_::_*42>>
+
+  @spec pubkey_create(privkey :: privkey()) :: pubkey()
+  def pubkey_create(privkey) do
+    {:ok, privkey_bytes} = parse_privkey(privkey)
+    {:ok, pubkey} = :libsecp256k1.ec_pubkey_create(privkey_bytes, :uncompressed)
     pubkey
   end
 
@@ -20,13 +25,13 @@ defmodule Ether do
     |> to_hex()
   end
 
-  @spec pubkey_create(bytes :: binary(), format :: :bytes | :hex) :: <<_::_*20>> | <<_::_*42>>
-  def pubkey_create(bytes, :bytes) do
-    pubkey_create(bytes)
+  @spec pubkey_create(privkey :: privkey(), format :: :bytes | :hex) :: pubkey()
+  def pubkey_create(privkey, :bytes) do
+    pubkey_create(privkey)
   end
 
-  def pubkey_create(bytes, :hex) do
-    pubkey_create(bytes)
+  def pubkey_create(privkey, :hex) do
+    pubkey_create(privkey)
     |> to_hex()
   end
 
@@ -37,6 +42,9 @@ defmodule Ether do
 
       <<encoded_private_key::binary-size(64)>> ->
         Base.decode16(encoded_private_key, case: :mixed)
+
+      pkey when is_integer(pkey) ->
+        {:ok, <<pkey::256>>}
 
       _ ->
         :error
