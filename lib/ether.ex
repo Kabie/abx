@@ -9,7 +9,7 @@ defmodule Ether do
   @spec pubkey_create(privkey :: privkey()) :: pubkey()
   def pubkey_create(privkey) do
     {:ok, privkey_bytes} = parse_privkey(privkey)
-    {:ok, pubkey} = :libsecp256k1.ec_pubkey_create(privkey_bytes, :uncompressed)
+    {pubkey, _} = :crypto.generate_key(:ecdh, :secp256k1, privkey_bytes)
     pubkey
   end
 

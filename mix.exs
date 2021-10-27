@@ -27,6 +27,7 @@ defmodule ABX.MixProject do
       {:ecto, "~> 3.6"},
       {:jason, "~> 1.2"},
       {:libsecp256k1, "~> 0.1.10"},
+      {:curvy, "~> 0.3.0"},
       {:ex_rlp, "~> 0.5.3"},
     ]
   end
