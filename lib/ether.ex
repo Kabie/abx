@@ -1,6 +1,6 @@
 defmodule Ether do
   @spec keccak_256(bytes :: binary()) :: <<_::_*32>>
-  defdelegate keccak_256(bytes), to: :keccakf1600, as: :sha3_256
+  defdelegate keccak_256(bytes), to: Keccak, as: :keccak_256
 
   @type privkey() :: <<_::_*32>> | <<_::_*64>> | pos_integer()
   @type pubkey() :: <<_::_*65>>

@@ -3,9 +3,10 @@ defmodule ABX.DecoderTest do
   doctest ABX.Decoder
 
   alias ABX.Decoder
+  alias ABX.Types.Address
 
   test "decode_type" do
-    assert Decoder.decode_type(<<1::256>>, :address, <<1::256>>) == {:ok, <<1::160>>}
+    assert Decoder.decode_type(<<1::256>>, :address, <<1::256>>) == Address.cast(1)
   end
 
   test "decode int<X>" do

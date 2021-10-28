@@ -14,19 +14,15 @@ defmodule ABX.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :crypto]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-      {:keccakf1600, "~> 2.0", hex: :keccakf1600_otp23},
-      {:ecto, "~> 3.6"},
+      {:ecto, "~> 3.7"},
       {:jason, "~> 1.2"},
-      {:libsecp256k1, "~> 0.1.10"},
       {:curvy, "~> 0.3.0"},
       {:ex_rlp, "~> 0.5.3"},
     ]

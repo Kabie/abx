@@ -67,8 +67,8 @@ defmodule ABX.Helpers do
       |> Map.put_new_lazy(:value, fn ->
         0
       end)
-      |> Map.update(:to, "", &normalize_binary/1)
-      |> Map.update(:data, "", &normalize_binary/1)
+      |> Map.update(:to, <<>>, &normalize_address/1)
+      |> Map.update(:data, <<>>, &normalize_data/1)
 
     signed_txn =
       sign_transaction(tco, private_key)
@@ -77,12 +77,19 @@ defmodule ABX.Helpers do
     "0x" <> signed_txn
   end
 
-  defp normalize_binary("0x" <> hex) do
-    Base.decode16!(hex, case: :mixed)
+  defp normalize_address(address) do
+    case ABX.Types.Address.cast(address) do
+      {:ok, address} -> address.bytes
+      _ -> <<>>
+    end
   end
 
-  defp normalize_binary(binary) do
-    binary
+  defp normalize_data(data) do
+    case data do
+      "0x" <> hex -> Base.decode16!(hex, case: :mixed)
+      binary when is_binary(binary) -> binary
+      _ -> <<>>
+    end
   end
 
   defp make_signature(msg_to_sign, private_key) do
