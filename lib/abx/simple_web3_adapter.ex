@@ -26,7 +26,7 @@ defmodule ABX.SimpleWeb3Adapter do
           {:ok, result}
         else
           {:ok, %{error: %{code: code, message: message}}} ->
-            Logger.error("JSONRPC error #{inspect(jsonrpc_payload)}: #{code} #{message}")
+            Logger.error("JSONRPC error #{web3_endpoint} #{inspect(jsonrpc_payload)}: #{code} #{message}")
             {:error, code, message}
 
           {:ok, decoded} when is_list(decoded) ->
@@ -40,11 +40,11 @@ defmodule ABX.SimpleWeb3Adapter do
             {:ok, results}
 
           {:error, error} ->
-            Logger.error("JSONRPC error #{inspect(jsonrpc_payload)}: #{inspect(error)}")
+            Logger.error("JSONRPC error #{web3_endpoint} #{inspect(jsonrpc_payload)}: #{inspect(error)}")
             {:error, error}
 
           error ->
-            Logger.error("JSONRPC error #{inspect(jsonrpc_payload)}: #{inspect(error)}")
+            Logger.error("JSONRPC error #{web3_endpoint} #{inspect(jsonrpc_payload)}: #{inspect(error)}")
             {:error, :unknown_error}
         end
       end
