@@ -60,6 +60,7 @@ defmodule ABX.SimpleWeb3Adapter do
         with {:ok, return_values} <- json_rpc(web3_endpoint, batched_request, opts) do
           results =
             return_values
+            |> List.wrap()
             |> Enum.zip(return_types)
             |> Enum.map(fn {return_value, return_type} ->
               case decode_value(return_value, return_type) do
