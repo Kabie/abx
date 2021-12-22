@@ -68,6 +68,26 @@ defmodule ABX.Types.Address do
     Base.encode16(bytes, case: :lower)
   end
 
+  def to_checksum(%__MODULE__{bytes: bytes}) do
+    chars =
+      bytes
+      |> encode_bytes()
+      |> Keccak.keccak_256()
+      |> to_halfbytes()
+      |> Enum.zip(Enum.map(to_halfbytes(bytes), &Integer.to_string(&1, 16)))
+      |> Enum.map(fn
+        {h, b} when h > 7 -> b
+        {_, b} -> String.downcase(b)
+      end)
+
+    ["0x" | chars]
+    |> Enum.join()
+  end
+
+  defp to_halfbytes(bytes) do
+    for << half::4 <- bytes >>, do: half
+  end
+
   defimpl String.Chars do
     def to_string(hash) do
       @for.to_string(hash)

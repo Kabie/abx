@@ -6,16 +6,6 @@ defmodule Keccak do
   * KECCAK1600-f the original pre-fips version as used in Ethereum
   """
 
-  inlines =
-    for step <- 0..23 do
-      {:"keccakf_exor_#{step}", 25}
-    end ++
-    for step <- 0..24 do
-      {:"keccakf_#{step}", 25}
-    end
-
-  @compile {:inline, [{:absorb, 6} | inlines]}
-
   import Bitwise
 
   def keccak_256(bytes) do
@@ -227,8 +217,6 @@ defmodule Keccak do
     <<start::binary(), bxor(block, value), rest::binary()>>
   end
 
-  # Fallbacks
-
   defp absorb(a, src, src_len, len, rate, delim) when len >= rate do
     a
     |> xorin(src, src_len - len, rate)
@@ -238,12 +226,9 @@ defmodule Keccak do
 
   defp absorb(a, src, src_len, len, rate, delim) do
     a
-    # Xor source the DS and pad frame.
     |> xor(len, delim)
-    #
     |> xor(rate - 1, 0x80)
     |> xorin(src, src_len - len, len)
-    # Apply P
     |> keccakf()
   end
 end

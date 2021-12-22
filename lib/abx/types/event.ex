@@ -17,6 +17,12 @@ defmodule ABX.Types.Event do
 
     quote do
       defmodule unquote(event_module) do
+        @moduledoc """
+        #{unquote(to_definition(event))}
+
+            #{unquote(event.signature)}
+        """
+
         defstruct unquote(input_names)
 
         def abi() do
@@ -68,4 +74,26 @@ defmodule ABX.Types.Event do
   def build_event(fields, [{name, _type, false} | inputs], [value | data], indexed) do
     build_event([{name, value} | fields], inputs, data, indexed)
   end
+
+  def to_definition(%__MODULE__{name: name, inputs: inputs, anonymous: anonymous}) do
+    param_types =
+      inputs
+      |> Enum.map(fn
+        {name, type, indexed} ->
+          type = ABX.type_name(type)
+          if indexed do
+            "#{type} indexed #{name}"
+          else
+            "#{type} #{name}"
+          end
+      end)
+      |> Enum.join(", ")
+
+    if anonymous do
+      "#{name}(#{param_types}) anonymous"
+    else
+      "#{name}(#{param_types})"
+    end
+  end
+
 end
