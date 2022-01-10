@@ -88,7 +88,8 @@ defmodule ABX.Compiler do
     }
   end
 
-  def parse_abi(%{type: "receive"}) do
+  # receive & fallback
+  def parse_abi(%{type: _}) do
     nil
   end
 
