@@ -68,6 +68,9 @@ defmodule ABX.Types.Address do
     Base.encode16(bytes, case: :lower)
   end
 
+  def is_zero?(%__MODULE__{bytes: <<0::@bits_size>>}), do: true
+  def is_zero?(_), do: false
+
   def to_checksum(%__MODULE__{bytes: bytes}) do
     chars =
       bytes
