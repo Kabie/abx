@@ -60,9 +60,7 @@ defmodule ABX.Decoder do
 
   def decode_type(<<offset::256>>, {:array, inner_type}, data) do
     <<_skipped::bytes-size(offset), len::256, rest::bytes()>> = data
-    inner_size = len * 32
-    <<inner_data::bytes-size(inner_size), _::bytes()>> = rest
-    decode_data(inner_data, List.duplicate(inner_type, len))
+    decode_data(rest, List.duplicate(inner_type, len))
   end
 
   # TODO
