@@ -63,6 +63,10 @@ defmodule ABX.Decoder do
     decode_data(rest, List.duplicate(inner_type, len))
   end
 
+  def decode_type(_, {:array, inner_type, len}, data) do
+    decode_data(data, List.duplicate(inner_type, len))
+  end
+
   # TODO
   def decode_type(_, type, _data) do
     throw({:unknow_type, type})

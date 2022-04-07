@@ -121,7 +121,7 @@ defmodule ABX.Types.Function do
             Keyword.merge([to: @contract_address], opts)
           )
 
-        {{:eth_call, [tco, block]}, unquote(return_types)}
+        {{:eth_call, [tco, block]}, unquote(Macro.escape(return_types))}
       end
     end
   end
