@@ -38,8 +38,8 @@ defmodule ABX.Encoder do
     end
   end
 
-  def encode(list, {:tuple, inner_types}) when is_list(list) and is_list(inner_types) and length(list) == length(inner_types) do
-    for {value, inner_type} <- Enum.zip(list, inner_types), into: <<>> do
+  def encode(tuple, {:tuple, inner_types}) when is_tuple(tuple) and is_list(inner_types) and tuple_size(tuple) == length(inner_types) do
+    for {value, inner_type} <- tuple |> Tuple.to_list |> Enum.zip(inner_types), into: <<>> do
       encode(value, inner_type)
     end
   end
@@ -66,7 +66,17 @@ defmodule ABX.Encoder do
     pack(encoded_inputs, input_types, base_offset, inplace_data <> offset, data <> encoded)
   end
 
-  defp pack([encoded | encoded_inputs], [_static_type | input_types], base_offset, inplace_data, data) do
-    pack(encoded_inputs, input_types, base_offset, inplace_data <> encoded, data)
+  defp pack([encoded | encoded_inputs], [type | input_types], base_offset, inplace_data, data) do
+    pack(encoded_inputs, input_types, base_offset + type_size(type) - 32, inplace_data <> encoded, data)
   end
+
+
+  defp type_size({:tuple, inner_types}) do
+    inner_types
+    |> Enum.map(&type_size/1)
+    |> Enum.sum()
+  end
+
+  defp type_size(_), do: 32
+
 end
