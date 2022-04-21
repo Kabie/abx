@@ -37,23 +37,27 @@ defmodule ABX do
 
   @type types() :: unquote(all_type_definitions)
 
+  def parse_type(%{type: "tuple", components: inner_types}) do
+    {:tuple, inner_types |> Enum.map(&parse_type/1)}
+  end
+
   for {name, type} <- all_types do
-    def parse_type(unquote(name)) do
+    def parse_type(%{type: unquote(name)}) do
       unquote(type)
     end
   end
 
-  def parse_type(name) do
-    case Regex.run(~r/(.*)\[(\d*)\]/, name) do
+  def parse_type(%{type: type_name} = type_def) do
+    case Regex.run(~r/(.*)\[(\d*)\]/, type_name) do
       [_, inner_type, ""] ->
-        {:array, parse_type(inner_type)}
+        {:array, parse_type(%{type_def | type: inner_type})}
 
       [_, inner_type, n] ->
-        {:array, parse_type(inner_type), String.to_integer(n)}
+        {:array, parse_type(%{type_def | type: inner_type}), String.to_integer(n)}
 
       _ ->
-        Logger.warn("Unsupported type: #{name}")
-        String.to_atom(name)
+        Logger.warn("Unsupported type name: #{type_name}")
+        String.to_atom(type_name)
     end
   end
 
@@ -71,8 +75,21 @@ defmodule ABX do
     "#{type_name(inner_type)}[#{n}]"
   end
 
+  def type_name({:tuple, inner_types}) do
+    "(#{inner_types |> Enum.map(&type_name/1) |> Enum.join(",")})"
+  end
+
   def type_name(type) do
-    Logger.warn("Unsupported type: #{type}")
+    Logger.warn("Unsupported type: #{inspect(type)}")
     to_string(type)
+  end
+
+  def encode_packed(values, types) do
+    encoded_values =
+      for {value, type} <- Enum.zip(values, types) do
+        ABX.Encoder.encode(value, type)
+      end
+
+    ABX.Encoder.pack(encoded_values, types)
   end
 end

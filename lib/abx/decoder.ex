@@ -48,6 +48,12 @@ defmodule ABX.Decoder do
     {:ok, n}
   end
 
+  def decode_type(_, {:tuple, inner_types}, data) do
+    with {:ok, values} <- decode_data(data, inner_types) do
+      {:ok, List.to_tuple(values)}
+    end
+  end
+
   def decode_type(<<offset::256>>, :bytes, data) do
     <<_skipped::bytes-size(offset), len::256, bytes::bytes-size(len), _::bytes()>> = data
     ABX.Types.Data.cast(bytes)

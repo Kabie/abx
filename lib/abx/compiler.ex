@@ -69,11 +69,13 @@ defmodule ABX.Compiler do
   end
 
   def parse_abi(%{type: "event"} = abi) do
+    inputs = parse_event_params(abi.name, abi.inputs)
+
     %ABX.Types.Event{
       name: String.to_atom(abi.name),
       anonymous: abi.anonymous,
-      inputs: parse_event_params(abi.name, abi.inputs),
-      signature: calc_signature(abi.name, abi.inputs)
+      inputs: inputs,
+      signature: calc_signature(abi.name, inputs)
     }
   end
 
@@ -93,32 +95,32 @@ defmodule ABX.Compiler do
     nil
   end
 
-  def calc_signature(name, params) do
-    [name, ?(, params |> Enum.map(& &1.type) |> Enum.join(","), ?)]
+  def calc_signature(name, inputs) do
+    [name, ?(, inputs |> Enum.map(&ABX.type_name(elem(&1, 1))) |> Enum.join(","), ?)]
     |> IO.iodata_to_binary()
     |> Ether.keccak_256(:hex)
   end
 
-  def parse_event_params(event_name, types) do
-    types
-    |> Enum.map(fn %{name: name, type: type, indexed: indexed} ->
+  def parse_event_params(event_name, type_defs) do
+    type_defs
+    |> Enum.map(fn %{name: name, indexed: indexed} = type_def ->
       if name == "" do
         Logger.error("Event #{inspect(event_name)}: empty param name")
       end
 
-      {String.to_atom(name), ABX.parse_type(type), indexed}
+      {String.to_atom(name), ABX.parse_type(type_def), [indexed: indexed]}
     end)
   end
 
-  def parse_params(types) do
-    types
-    |> Enum.map(fn %{name: name, type: type} ->
+  def parse_params(type_defs) do
+    type_defs
+    |> Enum.map(fn %{name: name} = type_def ->
       param =
         name
         |> String.trim_leading("_")
         |> String.to_atom()
 
-      {param, ABX.parse_type(type)}
+      {param, ABX.parse_type(type_def)}
     end)
   end
 

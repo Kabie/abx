@@ -32,6 +32,11 @@ defmodule ABX.Types.Function do
   def define_func_call(%__MODULE__{} = abi) do
     signature = method_signature(abi)
 
+    func_selector =
+      signature
+      |> Ether.keccak_256(:hex)
+      |> binary_part(0, 10)
+
     abi_name =
       signature
       |> String.replace(["(", ")", "[", "]", ","], "_")
@@ -56,28 +61,23 @@ defmodule ABX.Types.Function do
 
     case abi.state_mutability do
       :view ->
-        define_immutable_call(abi, signature, abi_name, params, return_types)
+        define_immutable_call(abi, signature, func_selector, abi_name, params, return_types)
 
       :pure ->
-        define_immutable_call(abi, signature, abi_name, params, return_types)
+        define_immutable_call(abi, signature, func_selector, abi_name, params, return_types)
 
       :nonpayable ->
-        define_transaction_call(abi, signature, abi_name, params)
+        define_transaction_call(abi, signature, func_selector, abi_name, params)
 
       :payable ->
-        define_transaction_call(abi, signature, abi_name, params)
+        define_transaction_call(abi, signature, func_selector, abi_name, params)
 
       _ ->
         nil
     end
   end
 
-  def define_transaction_call(abi, signature, abi_name, params) do
-    selector =
-      signature
-      |> Ether.keccak_256(:hex)
-      |> binary_part(0, 10)
-
+  def define_transaction_call(abi, signature, selector, abi_name, params) do
     quote generated: true do
       @doc unquote(signature)
       def unquote(abi_name)(unquote_splicing(params), opts) do
@@ -91,12 +91,7 @@ defmodule ABX.Types.Function do
     end
   end
 
-  def define_immutable_call(abi, signature, abi_name, params, return_types) do
-    selector =
-      signature
-      |> Ether.keccak_256(:hex)
-      |> binary_part(0, 10)
-
+  def define_immutable_call(abi, signature, selector, abi_name, params, return_types) do
     return_type_string =
       return_types
       |> Enum.map(&ABX.type_name/1)

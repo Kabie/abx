@@ -38,6 +38,12 @@ defmodule ABX.Encoder do
     end
   end
 
+  def encode(list, {:tuple, inner_types}) when is_list(list) and is_list(inner_types) and length(list) == length(inner_types) do
+    for {value, inner_type} <- Enum.zip(list, inner_types), into: <<>> do
+      encode(value, inner_type)
+    end
+  end
+
   # TODO: more types
   def encode(value, type) do
     Logger.error("Unsupported type #{inspect(type)}: #{inspect(value)}")

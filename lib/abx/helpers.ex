@@ -92,7 +92,7 @@ defmodule ABX.Helpers do
     end
   end
 
-  defp make_signature(msg_to_sign, private_key) do
+  def make_signature(msg_to_sign, private_key) do
     <<v, r::256, s::256>> =
       msg_to_sign
       |> Ether.keccak_256()

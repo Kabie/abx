@@ -34,13 +34,13 @@ defmodule ABX.Types.Event do
     end
   end
 
-  @spec decode_log(atom(), %{data: String.t(), topics: [String.t()]}) :: map()
+  @spec decode_log(atom(), %{data: binary(), topics: [String.t()]}) :: map()
   def decode_log(event_module, %{data: data, topics: [signature | topics]}) do
     %__MODULE__{signature: ^signature, inputs: inputs} = event_module.abi()
 
     {indexed_inputs, data_inputs} =
       inputs
-      |> Enum.split_with(&elem(&1, 2))
+      |> Enum.split_with(&elem(&1, 2)[:indexed])
 
     indexed_field_types =
       indexed_inputs
@@ -67,21 +67,22 @@ defmodule ABX.Types.Event do
 
   def build_event(fields, [], _data, _indexed), do: fields
 
-  def build_event(fields, [{name, _type, true} | inputs], data, [value | indexed]) do
-    build_event([{name, value} | fields], inputs, data, indexed)
-  end
-
-  def build_event(fields, [{name, _type, false} | inputs], [value | data], indexed) do
-    build_event([{name, value} | fields], inputs, data, indexed)
+  def build_event(fields, [{name, _type, meta} | inputs], data, indexed) do
+    if meta[:indexed] do
+      build_event([{name, hd(indexed)} | fields], inputs, data, tl(indexed))
+    else
+      build_event([{name, hd(data)} | fields], inputs, tl(data), indexed)
+    end
   end
 
   def to_definition(%__MODULE__{name: name, inputs: inputs, anonymous: anonymous}) do
     param_types =
       inputs
       |> Enum.map(fn
-        {name, type, indexed} ->
+        {name, type, meta} ->
           type = ABX.type_name(type)
-          if indexed do
+
+          if meta[:indexed] do
             "#{type} indexed #{name}"
           else
             "#{type} #{name}"
