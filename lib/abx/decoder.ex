@@ -101,8 +101,8 @@ defmodule ABX.Decoder do
     <<_skipped::bytes-size(array_offset), len::256, rest::bytes()>> = data
 
     case decode_data(rest, List.duplicate(inner_type, len), 0) do
-      {:ok, values, inner_offset} ->
-        {:ok, values, offset + inner_offset + 32}
+      {:ok, values, _inner_offset} ->
+        {:ok, values, offset + 32}
 
       _ ->
         :error
