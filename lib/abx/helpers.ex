@@ -119,6 +119,7 @@ defmodule ABX.Helpers do
   def wallet_recover_address(message, signature) do
     addr =
       wallet_message(message)
+      |> Ether.keccak_256()
       |> recover_pubkey(signature)
       |> Ether.keccak_256()
       |> binary_part(12, 20)
@@ -135,7 +136,11 @@ defmodule ABX.Helpers do
   end
 
   defp unpack_signature("0x" <> signature) do
-    {:ok, <<r::256, s::256, v>>} = Base.decode16(signature, case: :mixed)
+    unpack_signature(signature)
+  end
+
+  defp unpack_signature(signature) do
+    <<r::256, s::256, v>> = Base.decode16!(signature, case: :mixed)
     {r, s, v}
   end
 end
