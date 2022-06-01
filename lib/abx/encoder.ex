@@ -4,6 +4,13 @@ defmodule ABX.Encoder do
   @spec encode(term(), ABX.types()) :: binary()
   def encode(value, type)
 
+  def encode(switch, :bool) do
+    case switch do
+      true -> <<1::256>>
+      _ -> <<0::256>>
+    end
+  end
+
   def encode(address, :address) do
     {:ok, %{bytes: bytes}} = ABX.Types.Address.cast(address)
     <<0::96, bytes::bytes()>>
@@ -16,10 +23,11 @@ defmodule ABX.Encoder do
 
   def encode(integer, {:int, bits}) when is_integer(integer) do
     padding = 256 - bits
+
     if integer >= 0 do
-      << 0::size(padding), integer::signed-size(bits)>>
+      <<0::size(padding), integer::signed-size(bits)>>
     else
-      << -1::size(padding), integer::signed-size(bits)>>
+      <<-1::size(padding), integer::signed-size(bits)>>
     end
   end
 
@@ -38,8 +46,9 @@ defmodule ABX.Encoder do
     end
   end
 
-  def encode(tuple, {:tuple, inner_types}) when is_tuple(tuple) and is_list(inner_types) and tuple_size(tuple) == length(inner_types) do
-    for {value, inner_type} <- tuple |> Tuple.to_list |> Enum.zip(inner_types), into: <<>> do
+  def encode(tuple, {:tuple, inner_types})
+      when is_tuple(tuple) and is_list(inner_types) and tuple_size(tuple) == length(inner_types) do
+    for {value, inner_type} <- tuple |> Tuple.to_list() |> Enum.zip(inner_types), into: <<>> do
       encode(value, inner_type)
     end
   end
@@ -49,7 +58,6 @@ defmodule ABX.Encoder do
     Logger.error("Unsupported type #{inspect(type)}: #{inspect(value)}")
     <<0::256>>
   end
-
 
   @spec pack([binary()], [ABX.types()]) :: binary()
 
@@ -61,15 +69,26 @@ defmodule ABX.Encoder do
     inplace_data <> data
   end
 
-  defp pack([encoded | encoded_inputs], [{:array, _} | input_types], base_offset, inplace_data, data) do
+  defp pack(
+         [encoded | encoded_inputs],
+         [{:array, _} | input_types],
+         base_offset,
+         inplace_data,
+         data
+       ) do
     offset = encode(base_offset + byte_size(data), {:uint, 256})
     pack(encoded_inputs, input_types, base_offset, inplace_data <> offset, data <> encoded)
   end
 
   defp pack([encoded | encoded_inputs], [type | input_types], base_offset, inplace_data, data) do
-    pack(encoded_inputs, input_types, base_offset + type_size(type) - 32, inplace_data <> encoded, data)
+    pack(
+      encoded_inputs,
+      input_types,
+      base_offset + type_size(type) - 32,
+      inplace_data <> encoded,
+      data
+    )
   end
-
 
   defp type_size({:tuple, inner_types}) do
     inner_types
@@ -78,5 +97,4 @@ defmodule ABX.Encoder do
   end
 
   defp type_size(_), do: 32
-
 end
