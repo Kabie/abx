@@ -49,6 +49,12 @@ defmodule ABX.Web3API do
         |> Map.update!(:baseFeePerGas, fn list -> Enum.map(list, &hex_number/1) end)
         |> Map.update(:reward, [], fn list -> Enum.map(list, &hex_number/1) end)
       end
+
+      def_web3 :eth_chainId, [], :hex
+
+      def_web3 :eth_syncing, [], fn result ->
+        result
+      end
     end
   end
 
