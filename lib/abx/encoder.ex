@@ -12,7 +12,8 @@ defmodule ABX.Encoder do
   def encode(switch, :bool) do
     case switch do
       true -> <<1::256>>
-      _ -> <<0::256>>
+      false -> <<0::256>>
+      _ -> Logger.error("Unsupported type bool: #{inspect(switch)}")
     end
   end
 
