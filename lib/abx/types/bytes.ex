@@ -9,7 +9,7 @@ defmodule ABX.Types.Bytes do
 
   @type t :: %__MODULE__{
           bytes: binary(),
-          size: 1..32,
+          size: 1..32
         }
 
   @impl Ecto.Type
@@ -31,8 +31,17 @@ defmodule ABX.Types.Bytes do
   @spec cast(term()) :: {:ok, t()} | :error
   def cast(<<"0x", hex_string::bytes()>>), do: cast_hex(hex_string)
   def cast(<<bytes::bytes()>>), do: {:ok, %__MODULE__{bytes: bytes, size: byte_size(bytes)}}
-  def cast(%__MODULE__{bytes: <<_::bytes()>>, size: size} = term) when size in 1..32, do: {:ok, term}
+
+  def cast(%__MODULE__{bytes: <<_::bytes()>>, size: size} = term) when size in 1..32,
+    do: {:ok, term}
+
   def cast(_term), do: :error
+
+  @spec cast!(term()) :: t()
+  def cast!(term) do
+    {:ok, bs} = cast(term)
+    bs
+  end
 
   defp cast_hex(hex_string) do
     case Base.decode16(hex_string, case: :mixed) do
@@ -77,5 +86,4 @@ defmodule ABX.Types.Bytes do
       |> Encode.string(opts)
     end
   end
-
 end

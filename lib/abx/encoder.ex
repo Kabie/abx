@@ -4,16 +4,16 @@ defmodule ABX.Encoder do
   @spec encode(term(), ABX.types()) :: binary()
   def encode(value, type)
 
+  def encode(address, :address) do
+    {:ok, %{bytes: bytes}} = ABX.Types.Address.cast(address)
+    <<0::96, bytes::bytes()>>
+  end
+
   def encode(switch, :bool) do
     case switch do
       true -> <<1::256>>
       _ -> <<0::256>>
     end
-  end
-
-  def encode(address, :address) do
-    {:ok, %{bytes: bytes}} = ABX.Types.Address.cast(address)
-    <<0::96, bytes::bytes()>>
   end
 
   def encode(integer, {:uint, bits}) when is_integer(integer) do
@@ -53,6 +53,12 @@ defmodule ABX.Encoder do
     end
   end
 
+  # TODO: support {:bytes, 0} for 0x?
+  def encode(%ABX.Types.Bytes{size: size, bytes: bytes}, :bytes) do
+    padding = 256 - size * 8
+    encode(size, {:uint, 256}) <> bytes <> <<0::size(padding)>>
+  end
+
   # TODO: more types
   def encode(value, type) do
     Logger.error("Unsupported type #{inspect(type)}: #{inspect(value)}")
@@ -72,6 +78,17 @@ defmodule ABX.Encoder do
   defp pack(
          [encoded | encoded_inputs],
          [{:array, _} | input_types],
+         base_offset,
+         inplace_data,
+         data
+       ) do
+    offset = encode(base_offset + byte_size(data), {:uint, 256})
+    pack(encoded_inputs, input_types, base_offset, inplace_data <> offset, data <> encoded)
+  end
+
+  defp pack(
+         [encoded | encoded_inputs],
+         [:bytes | input_types],
          base_offset,
          inplace_data,
          data
