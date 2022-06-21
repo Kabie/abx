@@ -54,10 +54,25 @@ defmodule ABX.Encoder do
     end
   end
 
-  # TODO: support {:bytes, 0} for 0x?
   def encode(%ABX.Types.Bytes{size: size, bytes: bytes}, :bytes) do
     padding = 256 - size * 8
     encode(size, {:uint, 256}) <> bytes <> <<0::size(padding)>>
+  end
+
+  def encode(%ABX.Types.Hash{bytes: bytes}, {:bytes, 32}) do
+    bytes
+  end
+
+  def encode(bytes, :bytes) do
+    size = byte_size(bytes)
+    padding = rem(bit_size(bytes), 256)
+
+    if padding > 0 do
+      suffix = 256 - padding
+      encode(size, {:uint, 256}) <> bytes <> <<0::size(suffix)>>
+    else
+      encode(size, {:uint, 256}) <> bytes
+    end
   end
 
   # TODO: more types
