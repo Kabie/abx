@@ -76,5 +76,4 @@ defmodule ABX.Types.Data do
       |> Encode.string(opts)
     end
   end
-
 end

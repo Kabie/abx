@@ -22,6 +22,14 @@ defmodule ABX.Compiler do
       def abis() do
         @abis
       end
+      def abi_file, do: @external_resource
+
+      @name __MODULE__
+      |> Module.split()
+      |> List.last()
+      # |> Macro.underscore()
+      |> String.to_atom()
+      def contract_name, do: @name
 
       def address() do
         @contract_address

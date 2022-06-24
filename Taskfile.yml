@@ -1,0 +1,8 @@
+# https://taskfile.dev
+version: "3"
+tasks:
+  sh: iex -S mix
+
+  setup:
+    cmds:
+      - mix deps.get

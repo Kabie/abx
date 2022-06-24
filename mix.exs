@@ -24,7 +24,7 @@ defmodule ABX.MixProject do
       {:ecto, "~> 3.7"},
       {:jason, "~> 1.2"},
       {:curvy, "~> 0.3.0"},
-      {:ex_rlp, "~> 0.5.3"},
+      {:ex_rlp, "~> 0.5.3"}
     ]
   end
 end

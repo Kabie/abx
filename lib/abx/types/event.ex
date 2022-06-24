@@ -13,7 +13,8 @@ defmodule ABX.Types.Event do
       event.inputs
       |> Enum.map(&elem(&1, 0))
 
-    event_module = Module.concat(__CALLER__.module, event.name)
+    contract_mod = __CALLER__.module
+    event_module = Module.concat([contract_mod, event.name])
 
     quote do
       defmodule unquote(event_module) do
@@ -27,6 +28,12 @@ defmodule ABX.Types.Event do
 
         def abi() do
           unquote(Macro.escape(event))
+        end
+
+        def signature, do: abi().signature
+
+        def contract() do
+          unquote(contract_mod)
         end
       end
 
@@ -96,5 +103,4 @@ defmodule ABX.Types.Event do
       "#{name}(#{param_types})"
     end
   end
-
 end
