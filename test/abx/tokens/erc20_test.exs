@@ -3,7 +3,7 @@ defmodule ABX.Tokens.ERC20Test do
 
   alias ABX.Tokens.ERC20
 
-  test "encode int<X>" do
+  test "erc20 token" do
     assert ERC20.abi_file() == ["priv/contracts/ERC20.abi.json"]
     assert ERC20.contract_name() == :ERC20
     assert ERC20.Transfer.contract() == ERC20
