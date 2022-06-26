@@ -5,7 +5,7 @@ defmodule ABX.DecoderTest do
   alias ABX.Decoder
   alias ABX.Types.Address
 
-  test "decode_type" do
+  test "decode address" do
     assert Decoder.decode_type(<<1::256>>, :address, 0) |> elem(1) == Address.cast(1) |> elem(1)
   end
 

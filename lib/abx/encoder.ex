@@ -9,6 +9,9 @@ defmodule ABX.Encoder do
     <<0::96, bytes::bytes()>>
   end
 
+  def encode(true, :bool), do: <<1::256>>
+  def encode(false, :bool), do: <<0::256>>
+
   def encode(integer, {:uint, bits}) when is_integer(integer) do
     padding = 256 - bits
     <<0::size(padding), integer::size(bits)>>

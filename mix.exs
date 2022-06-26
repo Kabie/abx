@@ -25,6 +25,8 @@ defmodule ABX.MixProject do
       {:jason, "~> 1.2"},
       {:curvy, "~> 0.3.0"},
       {:ex_rlp, "~> 0.5.3"},
+
+      {:stream_data, "~> 0.5", only: [:test, :dev]},
     ]
   end
 end
