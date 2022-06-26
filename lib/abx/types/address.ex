@@ -41,6 +41,11 @@ defmodule ABX.Types.Address do
   def cast(%__MODULE__{bytes: <<_::bytes-size(@hash_size)>>} = term), do: {:ok, term}
   def cast(_term), do: :error
 
+  def cast!(term) do
+    {:ok, addr} = cast(term)
+    addr
+  end
+
   defp cast_hex(hex_string) do
     case Base.decode16(hex_string, case: :mixed) do
       {:ok, bytes} ->
@@ -64,6 +69,7 @@ defmodule ABX.Types.Address do
   end
 
   defp encode_bytes(nil), do: ""
+
   defp encode_bytes(<<bytes::bytes-size(@hash_size)>>) do
     Base.encode16(bytes, case: :lower)
   end
@@ -88,7 +94,7 @@ defmodule ABX.Types.Address do
   end
 
   defp to_halfbytes(bytes) do
-    for << half::4 <- bytes >>, do: half
+    for <<half::4 <- bytes>>, do: half
   end
 
   defimpl String.Chars do

@@ -34,9 +34,17 @@ defmodule ABX.Types.Hash do
   def cast(<<"0x", hex_string::bytes-size(@bytes_size)>>), do: cast_hex(hex_string)
   def cast(<<hex_string::bytes-size(@bytes_size)>>), do: cast_hex(hex_string)
   def cast(<<bytes::bytes-size(@hash_size)>>), do: {:ok, %__MODULE__{bytes: bytes}}
-  def cast(term) when is_integer(term) and term >= 0, do: {:ok, %__MODULE__{bytes: <<term::8*@hash_size>>}}
+
+  def cast(term) when is_integer(term) and term >= 0,
+    do: {:ok, %__MODULE__{bytes: <<term::8*@hash_size>>}}
+
   def cast(%__MODULE__{bytes: <<_::bytes-size(@hash_size)>>} = term), do: {:ok, term}
   def cast(_term), do: :error
+
+  def cast!(term) do
+    {:ok, hash} = cast(term)
+    hash
+  end
 
   defp cast_hex(hex_string) do
     case Base.decode16(hex_string, case: :mixed) do
@@ -85,5 +93,4 @@ defmodule ABX.Types.Hash do
       |> Encode.string(opts)
     end
   end
-
 end

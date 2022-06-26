@@ -51,6 +51,11 @@ defmodule ABX.Types.HexDigit do
 
   def cast(_term), do: :error
 
+  def cast!(term) do
+    {:ok, h} = cast(term)
+    h
+  end
+
   def to_string(%__MODULE__{value: value}) do
     "0x" <> String.downcase(Integer.to_string(value, 16))
   end

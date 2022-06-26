@@ -33,6 +33,11 @@ defmodule ABX.Types.Data do
   def cast(%__MODULE__{bytes: <<_::bytes()>>} = term), do: {:ok, term}
   def cast(_term), do: :error
 
+  def cast!(term) do
+    {:ok, data} = cast(term)
+    data
+  end
+
   defp cast_hex(hex_string) do
     case Base.decode16(hex_string, case: :mixed) do
       {:ok, bytes} ->
