@@ -117,15 +117,12 @@ defmodule ABX.Helpers do
   end
 
   def wallet_recover_address(message, signature) do
-    addr =
-      wallet_message(message)
-      |> Ether.keccak_256()
-      |> recover_pubkey(signature)
-      |> Ether.keccak_256()
-      |> binary_part(12, 20)
-      |> Base.encode16(case: :lower)
-
-    "0x" <> addr
+    wallet_message(message)
+    |> Ether.keccak_256()
+    |> recover_pubkey(signature)
+    |> Ether.keccak_256()
+    |> binary_part(12, 20)
+    |> Ether.to_hex()
   end
 
   def recover_pubkey(message, signature) do

@@ -5,6 +5,11 @@ defmodule ABX do
 
   require Logger
 
+  def dynamic_type?(:string), do: true
+  def dynamic_type?(:bytes), do: true
+  def dynamic_type?({:array, _}), do: true
+  def dynamic_type?(_type), do: false
+
   basic_types =
     [:address, :bool, :string, :bytes]
     |> Enum.map(&{to_string(&1), &1})

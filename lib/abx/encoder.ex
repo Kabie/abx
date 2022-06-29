@@ -26,6 +26,23 @@ defmodule ABX.Encoder do
     end
   end
 
+  def encode(bytes, {:bytes, n}) when is_binary(bytes) and n in 1..32 and byte_size(bytes) == n do
+    padding = 32 - n
+    <<bytes::bytes(), 0::padding*8>>
+  end
+
+  def encode(binary, type) when type in [:bytes, :string] and is_binary(binary) do
+    len = byte_size(binary)
+    pad_len = calc_padding(len)
+    encode(len, {:uint, 256}) <> binary <> <<0::pad_len*8>>
+  end
+
+  def encode(string, :string) when is_binary(string) do
+    len = byte_size(string)
+    pad_len = calc_padding(len)
+    encode(len, {:uint, 256}) <> string <> <<0::pad_len*8>>
+  end
+
   def encode(list, {:array, inner_type}) when is_list(list) do
     data =
       for value <- list, into: <<>> do
@@ -64,13 +81,13 @@ defmodule ABX.Encoder do
     inplace_data <> data
   end
 
-  defp pack([encoded | encoded_inputs], [{:array, _} | input_types], base_offset, inplace_data, data) do
-    offset = encode(base_offset + byte_size(data), {:uint, 256})
-    pack(encoded_inputs, input_types, base_offset, inplace_data <> offset, data <> encoded)
-  end
-
   defp pack([encoded | encoded_inputs], [type | input_types], base_offset, inplace_data, data) do
-    pack(encoded_inputs, input_types, base_offset + type_size(type) - 32, inplace_data <> encoded, data)
+    if ABX.dynamic_type?(type) do
+      offset = encode(base_offset + byte_size(data), {:uint, 256})
+      pack(encoded_inputs, input_types, base_offset, inplace_data <> offset, data <> encoded)
+    else
+      pack(encoded_inputs, input_types, base_offset + type_size(type) - 32, inplace_data <> encoded, data)
+    end
   end
 
 
@@ -82,4 +99,12 @@ defmodule ABX.Encoder do
 
   defp type_size(_), do: 32
 
+  defp calc_padding(n) do
+    remaining = rem(n, 32)
+    if remaining == 0 do
+      0
+    else
+      32 - remaining
+    end
+  end
 end
