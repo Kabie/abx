@@ -76,6 +76,7 @@ defmodule ABX.EncodingTest do
         one_of([
           map(inner_data, &{:array, &1}),
           map(inner_data, &{:array, &1, len}),
+          map(list_of(inner_data, min_length: 2), &{:tuple, &1}),
         ])
       end)
     end)
@@ -120,6 +121,10 @@ defmodule ABX.EncodingTest do
 
   def gen_data({:array, inner_type, len}) do
     list_of(gen_data(inner_type), length: len)
+  end
+
+  def gen_data({:tuple, inner_types}) do
+    map(fixed_list(Enum.map(inner_types, &gen_data/1)), &List.to_tuple/1)
   end
 
   def gen_data(type) do

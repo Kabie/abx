@@ -72,7 +72,6 @@ defmodule ABX.Encoder do
 
 
   @spec pack([binary()], [ABX.types()]) :: binary()
-
   def pack(encoded_inputs, input_types) do
     pack(encoded_inputs, input_types, length(encoded_inputs) * 32, <<>>, <<>>)
   end

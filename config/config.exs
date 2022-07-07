@@ -1,4 +1,4 @@
 import Config
 
 config :stream_data,
-  max_generation_size: 1000
+  max_generation_size: 200

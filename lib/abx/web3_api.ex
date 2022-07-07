@@ -3,8 +3,8 @@ defmodule ABX.Web3API do
     quote do
       import unquote(__MODULE__)
 
-      def_web3 :eth_getTransactionByHash, [tx], fn txn ->
-        txn
+      def_web3 :eth_getTransactionByHash, [tx_hash], fn tx ->
+        tx
         |> Map.update!(:gas, &hex_number/1)
         |> Map.update!(:gasPrice, &hex_number/1)
         |> Map.update!(:nonce, &hex_number/1)
@@ -12,8 +12,8 @@ defmodule ABX.Web3API do
         |> Map.update!(:transactionIndex, &hex_number/1)
       end
 
-      def_web3 :eth_getTransactionReceipt, [tx], fn txn ->
-        txn
+      def_web3 :eth_getTransactionReceipt, [tx_hash], fn tx ->
+        tx
         |> Map.update!(:status, &hex_number/1)
       end
 
