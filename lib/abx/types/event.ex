@@ -59,7 +59,7 @@ defmodule ABX.Types.Event do
         value
       end)
 
-    {:ok, data_fields} = ABX.Decoder.decode_data(data, data_field_types)
+    {:ok, data_fields} = ABX.Decoder.decode_packed(data, data_field_types)
 
     fields = build_event([], inputs, data_fields, indexed_fields)
     struct!(event_module, fields)

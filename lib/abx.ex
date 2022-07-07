@@ -8,6 +8,8 @@ defmodule ABX do
   def dynamic_type?(:string), do: true
   def dynamic_type?(:bytes), do: true
   def dynamic_type?({:array, _}), do: true
+  def dynamic_type?({:array, type, _}), do: dynamic_type?(type)
+  def dynamic_type?({:tuple, inner_types}), do: Enum.any?(inner_types, &dynamic_type?/1)
   def dynamic_type?(_type), do: false
 
   basic_types =
@@ -89,12 +91,10 @@ defmodule ABX do
     to_string(type)
   end
 
-  def encode_packed(values, types) do
-    encoded_values =
-      for {value, type} <- Enum.zip(values, types) do
-        ABX.Encoder.encode(value, type)
-      end
+  defdelegate encode_packed(values, types), to: ABX.Encoder
 
-    ABX.Encoder.pack(encoded_values, types)
+  defmacro sigil_A({:<<>>, _, [addr_str]}, _mods) do
+    {:ok, address} = ABX.Types.Address.cast(addr_str)
+    Macro.escape(address)
   end
 end

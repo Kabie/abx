@@ -125,7 +125,7 @@ defmodule ABX.Types.Function do
     input_types = Enum.map(function.inputs, &elem(&1, 1))
 
     params_data =
-      encode_inputs(inputs, input_types)
+      ABX.Encoder.encode_packed(inputs, input_types)
       |> Base.encode16(case: :lower)
 
     data = selector <> params_data
@@ -137,15 +137,6 @@ defmodule ABX.Types.Function do
     Map.new(opts)
     |> Map.take([:from, :gas, :gas_price, :gas_limit, :value, :nonce])
     |> Map.merge(%{to: to, data: data})
-  end
-
-  def encode_inputs(inputs, input_types) do
-    encoded_inputs =
-      for {value, type} <- Enum.zip(inputs, input_types) do
-        ABX.Encoder.encode(value, type)
-      end
-
-    ABX.Encoder.pack(encoded_inputs, input_types)
   end
 
   def cast_inputs(inputs, types) do

@@ -1,5 +1,5 @@
 defmodule ABX.EncodingTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   use ExUnitProperties
   import StreamData
 
@@ -40,14 +40,6 @@ defmodule ABX.EncodingTest do
     ])
   end
 
-  def dynamic_types() do
-    one_of([
-      bytes_types(),
-      string_type(),
-      bytes_type(),
-    ])
-  end
-
   def abx_type() do
     one_of([
       address_type(),
@@ -57,11 +49,11 @@ defmodule ABX.EncodingTest do
       bytes_types(),
       string_type(),
       bytes_type(),
-      array_type(),
+      combo_types(),
     ])
   end
 
-  def array_type() do
+  def combo_types() do
     one_of([
       address_type(),
       bool_type(),
@@ -76,7 +68,7 @@ defmodule ABX.EncodingTest do
         one_of([
           map(inner_data, &{:array, &1}),
           map(inner_data, &{:array, &1, len}),
-          map(list_of(inner_data, min_length: 2), &{:tuple, &1}),
+          map(list_of(inner_data), &{:tuple, &1}),
         ])
       end)
     end)
@@ -143,41 +135,43 @@ defmodule ABX.EncodingTest do
     check all {type, data} <- abx_data(basic_types()) do
       {:ok, encode_then_decode} =
         data
-        |> Encoder.encode(type)
-        |> Decoder.decode(type)
+        |> Encoder.encode_type(type)
+        |> Decoder.decode_type(type)
 
       assert encode_then_decode == data
     end
   end
 
-  property "dynamic types" do
-    check all {type, data} <- abx_data(dynamic_types()) do
+  property "combo types" do
+    check all {type, data} <- abx_data(combo_types()) do
       {:ok, encode_then_decode} =
         data
-        |> Encoder.encode(type)
-        |> Decoder.decode(type)
+        |> Encoder.encode_type(type)
+        |> Decoder.decode_type(type)
 
       assert encode_then_decode == data
     end
   end
 
-  property "array types" do
-    check all {type, data} <- abx_data(array_type()) do
-      {:ok, encode_then_decode} =
-        data
-        |> Encoder.encode(type)
-        |> Decoder.decode(type)
-
-      assert encode_then_decode == data
-    end
-  end
-
-  property "decode encoded values" do
+  property "encode then decode" do
     check all {type, data} <- abx_data(abx_type()) do
       {:ok, encode_then_decode} =
         data
-        |> Encoder.encode(type)
-        |> Decoder.decode(type)
+        |> Encoder.encode_type(type)
+        |> Decoder.decode_type(type)
+
+      assert encode_then_decode == data
+    end
+  end
+
+  property "pack then unpack" do
+    check all types_and_data <- list_of(abx_data(abx_type())) do
+      {types, data} = Enum.unzip(types_and_data)
+
+      {:ok, encode_then_decode} =
+        data
+        |> Encoder.encode_packed(types)
+        |> Decoder.decode_packed(types)
 
       assert encode_then_decode == data
     end

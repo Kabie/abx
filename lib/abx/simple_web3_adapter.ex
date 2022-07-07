@@ -123,7 +123,7 @@ defmodule ABX.SimpleWeb3Adapter do
 
       def decode_value("0x" <> return_value, return_types) do
         {:ok, data} = Base.decode16(return_value, case: :mixed)
-        ABX.Decoder.decode_data(data, return_types)
+        ABX.Decoder.decode_packed(data, return_types)
       end
 
       use ABX.Web3API
