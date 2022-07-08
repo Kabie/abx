@@ -26,7 +26,7 @@ defmodule ABX.Types.Function do
   end
 
   def input_type({_, type}) do
-    ABX.type_name(type)
+    ABX.Types.name(type)
   end
 
   def define_func_call(%__MODULE__{} = abi) do
@@ -94,7 +94,7 @@ defmodule ABX.Types.Function do
   def define_immutable_call(abi, signature, selector, abi_name, params, return_types) do
     return_type_string =
       return_types
-      |> Enum.map(&ABX.type_name/1)
+      |> Enum.map(&ABX.Types.name/1)
       |> Enum.join(",")
 
     doc = """

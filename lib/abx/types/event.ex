@@ -80,7 +80,7 @@ defmodule ABX.Types.Event do
       inputs
       |> Enum.map(fn
         {name, type, meta} ->
-          type = ABX.type_name(type)
+          type = ABX.Types.name(type)
 
           if meta[:indexed] do
             "#{type} indexed #{name}"
@@ -96,5 +96,4 @@ defmodule ABX.Types.Event do
       "#{name}(#{param_types})"
     end
   end
-
 end

@@ -96,7 +96,7 @@ defmodule ABX.Compiler do
   end
 
   def calc_signature(name, inputs) do
-    [name, ?(, inputs |> Enum.map(&ABX.type_name(elem(&1, 1))) |> Enum.join(","), ?)]
+    [name, ?(, inputs |> Enum.map(&ABX.Types.name(elem(&1, 1))) |> Enum.join(","), ?)]
     |> IO.iodata_to_binary()
     |> Ether.keccak_256(:hex)
   end
@@ -108,7 +108,7 @@ defmodule ABX.Compiler do
         Logger.error("Event #{inspect(event_name)}: empty param name")
       end
 
-      {String.to_atom(name), ABX.parse_type(type_def), [indexed: indexed]}
+      {String.to_atom(name), ABX.Types.parse(type_def), [indexed: indexed]}
     end)
   end
 
@@ -120,7 +120,7 @@ defmodule ABX.Compiler do
         |> String.trim_leading("_")
         |> String.to_atom()
 
-      {param, ABX.parse_type(type_def)}
+      {param, ABX.Types.parse(type_def)}
     end)
   end
 
