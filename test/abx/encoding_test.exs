@@ -153,7 +153,7 @@ defmodule ABX.EncodingTest do
     end
   end
 
-  property "encode then decode" do
+  property "encode_type then decode_type" do
     check all {type, data} <- abx_data(abx_type()) do
       {:ok, encode_then_decode} =
         data
@@ -164,14 +164,14 @@ defmodule ABX.EncodingTest do
     end
   end
 
-  property "pack then unpack" do
+  property "encode then decode" do
     check all types_and_data <- list_of(abx_data(abx_type())) do
       {types, data} = Enum.unzip(types_and_data)
 
       {:ok, encode_then_decode} =
         data
-        |> Encoder.encode_packed(types)
-        |> Decoder.decode_packed(types)
+        |> Encoder.encode(types)
+        |> Decoder.decode(types)
 
       assert encode_then_decode == data
     end

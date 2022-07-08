@@ -1,5 +1,6 @@
 defmodule ABX.Encoder do
   require Logger
+  import ABX.Types
 
   @spec encode_type(term(), ABX.types()) :: binary()
   def encode_type(value, type)
@@ -26,10 +27,20 @@ defmodule ABX.Encoder do
     end
   end
 
-  def encode_type(bytes_n, {:bytes, n}) when is_binary(bytes_n) and n in 1..32 do
-    {:ok, %{bytes: bytes, size: ^n}} = ABX.Types.Bytes.cast(bytes_n)
+  def encode_type(bytes_n, {:bytes, n}) when is_binary(bytes_n) and n in 1..32 and byte_size(bytes_n) == n do
     padding = 32 - n
-    <<bytes::bytes(), 0::padding*8>>
+    <<bytes_n::bytes(), 0::padding*8>>
+  end
+
+  def encode_type("0x" <> bytes_n, {:bytes, n}) when is_binary(bytes_n) and n in 1..32 and byte_size(bytes_n) == n * 2 do
+    case Base.decode16(bytes_n, case: :mixed) do
+      {:ok, bytes} ->
+        padding = 32 - n
+        <<bytes::bytes(), 0::padding*8>>
+
+      _ ->
+        :error
+    end
   end
 
   def encode_type(binary, type) when type in [:bytes, :string] and is_binary(binary) do
@@ -45,25 +56,23 @@ defmodule ABX.Encoder do
   end
 
   def encode_type(list, {:array, inner_type}) when is_list(list) do
-    data =
-      for value <- list, into: <<>> do
-        encode_type(value, inner_type)
-      end
-
-    encode_type(length(list), {:uint, 256}) <> data
+    len = length(list)
+    data = encode(list, List.duplicate(inner_type, len))
+    encode_type(len, {:uint, 256}) <> data
   end
 
   def encode_type(list, {:array, inner_type, n}) when is_list(list) and length(list) == n do
-    for value <- list, into: <<>> do
-      encode_type(value, inner_type)
+    if dynamic_type?(inner_type) do
+      encode(list, List.duplicate(inner_type, n))
+    else
+      for value <- list, into: <<>> do
+        encode_type(value, inner_type)
+      end
     end
   end
 
-  # TODO: use encode_packed
   def encode_type(tuple, {:tuple, inner_types}) when is_tuple(tuple) and is_list(inner_types) and tuple_size(tuple) == length(inner_types) do
-    for {value, inner_type} <- tuple |> Tuple.to_list |> Enum.zip(inner_types), into: <<>> do
-      encode_type(value, inner_type)
-    end
+    encode(Tuple.to_list(tuple), inner_types)
   end
 
   # TODO: more types
@@ -73,8 +82,8 @@ defmodule ABX.Encoder do
   end
 
 
-  @spec encode_packed([term()], [ABX.types()]) :: binary()
-  def encode_packed(values, types) when length(values) == length(types) do
+  @spec encode([term()], [ABX.types()]) :: binary()
+  def encode(values, types) when length(values) == length(types) do
     tail_offset =
       types
       |> Enum.map(&head_size/1)
@@ -84,7 +93,7 @@ defmodule ABX.Encoder do
       Enum.zip(values, types)
       |> Enum.reduce({"", ""}, fn {value, type}, {head, tail} ->
         encoded = encode_type(value, type)
-        if ABX.dynamic_type?(type) do
+        if dynamic_type?(type) do
           offset = encode_type(tail_offset + byte_size(tail), {:uint, 256})
           {head <> offset, tail <> encoded}
         else
@@ -94,26 +103,6 @@ defmodule ABX.Encoder do
 
     head <> tail
   end
-
-  defp head_size({:tuple, inner_types}) do
-    if Enum.any?(inner_types, &ABX.dynamic_type?/1) do
-      32
-    else
-      inner_types
-      |> Enum.map(&head_size/1)
-      |> Enum.sum()
-    end
-  end
-
-  defp head_size({:array, inner_type, n}) do
-    if ABX.dynamic_type?(inner_type) do
-      32
-    else
-      32 * n
-    end
-  end
-
-  defp head_size(_), do: 32
 
   defp calc_padding(n) do
     remaining = rem(n, 32)

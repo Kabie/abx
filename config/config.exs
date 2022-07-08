@@ -1,4 +1,6 @@
 import Config
 
-config :stream_data,
-  max_generation_size: 200
+if config_env() == :test do
+  config :stream_data,
+    max_generation_size: 100
+end

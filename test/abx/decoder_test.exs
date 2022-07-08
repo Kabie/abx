@@ -7,18 +7,18 @@ defmodule ABX.DecoderTest do
   import ABX, only: [sigil_A: 2]
 
   test "decode address" do
-    assert Decoder.decode_type(<<1::256>>, :address, 0) |> elem(1) == Address.cast(1) |> elem(1)
+    assert Decoder.decode_type(<<1::256>>, :address, 0) == Address.cast(1)
   end
 
   test "decode int<X>" do
     int128_1 = <<0::signed-128, 1::signed-128>>
-    assert Decoder.decode_type(int128_1, {:int, 128}, 0) == {:ok, 1, 32}
+    assert Decoder.decode_type(int128_1, {:int, 128}, 0) == {:ok, 1}
 
     int128_neg1 = << -1::signed-128, -1::signed-128>>
-    assert Decoder.decode_type(int128_neg1, {:int, 128}, 0) == {:ok, -1, 32}
+    assert Decoder.decode_type(int128_neg1, {:int, 128}, 0) == {:ok, -1}
   end
 
-  test "decode packed" do
+  test "decode complex types" do
     types = [:address, {:uint, 256}, :bytes, {:uint, 8}, {:uint, 256}, {:uint, 256}, {:uint, 256}, :address, :address, :bytes]
 
     data = """
@@ -40,7 +40,7 @@ defmodule ABX.DecoderTest do
     """
     |> Base.decode16!(case: :mixed)
 
-    assert Decoder.decode_packed(data, types) == {:ok, [
+    assert Decoder.decode(data, types) == {:ok, [
       ~A"0x6Ae6F87993506D270767bA063Ccf0c5e6100EC4E",
       0, "", 0, 0, 0, 0,
       ~A"0x0000000000000000000000000000000000000000",

@@ -125,7 +125,7 @@ defmodule ABX.Types.Function do
     input_types = Enum.map(function.inputs, &elem(&1, 1))
 
     params_data =
-      ABX.Encoder.encode_packed(inputs, input_types)
+      ABX.Encoder.encode(inputs, input_types)
       |> Base.encode16(case: :lower)
 
     data = selector <> params_data
