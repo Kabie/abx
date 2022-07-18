@@ -54,9 +54,13 @@ defmodule ABX.Types.Event do
       topics
       |> Enum.map(&Ether.unhex/1)
       |> Enum.zip(indexed_field_types)
-      |> Enum.map(fn {bytes, type} ->
-        {:ok, value} = ABX.Decoder.decode_type(bytes, type, 0)
-        value
+      |> Enum.map(fn {topic, type} ->
+        if bytes32_type?(type) do
+          {:ok, value} = ABX.Decoder.decode_type(topic, type, 0)
+          value
+        else
+          topic
+        end
       end)
 
     {:ok, data_fields} = ABX.Decoder.decode(data, data_field_types)
@@ -64,6 +68,13 @@ defmodule ABX.Types.Event do
     fields = build_event([], inputs, data_fields, indexed_fields)
     struct!(event_module, fields)
   end
+
+  defp bytes32_type?(:bytes), do: false
+  defp bytes32_type?(:string), do: false
+  defp bytes32_type?({:array, _}), do: false
+  defp bytes32_type?({:array, _, _}), do: false
+  defp bytes32_type?({:tuple, _}), do: false
+  defp bytes32_type?(_), do: true
 
   def build_event(fields, [], _data, _indexed), do: fields
 

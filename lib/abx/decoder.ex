@@ -2,15 +2,9 @@ defmodule ABX.Decoder do
   require Logger
   import ABX.Types
 
-  @spec decode_type(binary(), term()) :: {:ok, term()} | :error
-  def decode_type(data, type) do
-    case decode_type(data, type, 0) do
-      {:ok, value} -> {:ok, value}
-      :error -> :error
-    end
-  end
-
   @spec decode_type(binary(), term(), integer()) :: {:ok, term()} | :error
+  def decode_type(data, type, offset \\ 0)
+
   def decode_type(data, :address, offset) do
     <<_::bytes-size(offset), address::256, _::binary()>> = data
     ABX.Types.Address.cast(address)
