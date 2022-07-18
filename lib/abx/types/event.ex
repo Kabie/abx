@@ -55,7 +55,7 @@ defmodule ABX.Types.Event do
       |> Enum.map(&Ether.unhex/1)
       |> Enum.zip(indexed_field_types)
       |> Enum.map(fn {bytes, type} ->
-        {:ok, value, _} = ABX.Decoder.decode_type(bytes, type, 0)
+        {:ok, value} = ABX.Decoder.decode_type(bytes, type, 0)
         value
       end)
 
